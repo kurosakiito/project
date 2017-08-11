@@ -7,7 +7,11 @@ import getopt
 import sys
 import time
 
-ec2 = boto3.client('ec2')
+# Temp
+ec2 = boto3.client('ec2', region_name="us-east-1", aws_secret_access_key = "sJ8g0esSh0tLPMXMBWfJe5qp1+DPtMReE6oGtO7H",
+aws_access_key_id = "ASIAIXXO5F5N7UTZDKGA", aws_session_token=
+"FQoDYXdzELv//////////wEaDJTkz2Lq8+MCBN9iTiLYASw0fTm9Zzbeoi8dkH2qryqCDvDNciz4R+/w6pg/wjq4YnOdvF5WbBUn10bNK8uu+41PMygcSBgMiWD7Kp3HyJjCSfJLXGIhIHqE0Mj2ToFgD/RZeE0trLr3sT95tbYv+3ArTTjl09qpI2UjacM6CMfp+vrEikZNF5qmcex3uXag1Y4H71AAXzOkaGzoP2xcqO1/RWNNE7cqNtPhpJCElalHGznzVApowBrBMQswrMG6gGb25wPvNb0OxwMWJjAu71AQ+r4bfAxch8FegJfxugPu+zUJWkJ1uCj8hbbMBQ=="
+				   )
 
 expire_days=30
 today=datetime.datetime.now().strftime("%Y%m%d%H%M%S")
@@ -52,8 +56,8 @@ def lambda_handler(event, context):
 		sys.exit(2)        
 
 	#print latest_snap_id
-        print "Now trying to create AMI from: "+latest_snap_name
-	print "Checking if ami exists from " + latest_snap_name
+   		print "Now trying to create AMI from: "+latest_snap_name
+		print "Checking if ami exists from " + latest_snap_name
 
 	## Checking if an AMI has been created from the snapshot already.
 	ami_response = ec2.describe_images(Filters=[{'Name': 'tag:Name', 'Values':[latest_snap_name+"*"]}])	
@@ -68,7 +72,7 @@ def lambda_handler(event, context):
         response_register = ec2.register_image(Name=ami_name,Description="Test",RootDeviceName='/dev/xvda',BlockDeviceMappings=BlockDeviceMapping,DryRun=False)	
 	ami_id = response_register['ImageId']
 	waiter = ec2.get_waiter('image_available')
-	waiter.wait(ImageIds=[ami_id])
+	waiter.wait(ImageIds=[ami_id], state='available')
 	
 	##Adding tags to newly created ami
 	response_tag = ec2.create_tags(Resources=[ami_id], Tags=[{'Key':'expireDate', 'Value':epoc},{'Key':'Name', 'Value':ami_name}],)
